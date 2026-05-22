@@ -156,7 +156,7 @@ export default function Search() {
       regex.test(part) ? (
         <span
           key={index}
-          className="bg-[var(--color-primary)]/20 text-[var(--color-primary)] font-medium"
+          className="bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 font-medium"
         >
           {part}
         </span>
@@ -177,11 +177,11 @@ export default function Search() {
       />
 
       {/* 搜索框 */}
-      <div className="relative w-full max-w-2xl mx-4 bg-[var(--color-card-bg)] rounded-xl shadow-2xl border border-[var(--color-border)] overflow-hidden">
+      <div className="relative w-full max-w-2xl mx-4 bg-white dark:bg-gray-800 rounded-xl shadow-2xl border border-gray-200 dark:border-gray-700 overflow-hidden">
         {/* 搜索输入 */}
-        <div className="flex items-center px-4 border-b border-[var(--color-border)]">
+        <div className="flex items-center px-4 border-b border-gray-200 dark:border-gray-700">
           <svg
-            className="w-5 h-5 text-[var(--color-text-secondary)] shrink-0"
+            className="w-5 h-5 text-gray-400 shrink-0"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -200,9 +200,9 @@ export default function Search() {
             onChange={(e) => setQuery(e.target.value)}
             onKeyDown={handleKeyDown}
             placeholder="搜索文章..."
-            className="flex-1 px-3 py-4 text-[var(--color-text)] bg-transparent outline-none placeholder-[var(--color-text-secondary)]"
+            className="flex-1 px-3 py-4 text-gray-800 dark:text-gray-200 bg-transparent outline-none placeholder-gray-400"
           />
-          <kbd className="hidden sm:inline-block px-2 py-1 text-xs text-[var(--color-text-secondary)] bg-[var(--color-code-bg)] rounded">
+          <kbd className="hidden sm:inline-block px-2 py-1 text-xs text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-700 rounded">
             ESC
           </kbd>
         </div>
@@ -213,8 +213,8 @@ export default function Search() {
           className="max-h-[60vh] overflow-y-auto"
         >
           {isLoading ? (
-            <div className="px-4 py-8 text-center text-[var(--color-text-secondary)]">
-              <div className="inline-block w-6 h-6 border-2 border-[var(--color-primary)] border-t-transparent rounded-full animate-spin" />
+            <div className="px-4 py-8 text-center text-gray-500 dark:text-gray-400">
+              <div className="inline-block w-6 h-6 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
               <p className="mt-2">搜索中...</p>
             </div>
           ) : results.length > 0 ? (
@@ -224,28 +224,28 @@ export default function Search() {
                 href={`/blog/${result.slug}`}
                 className={`block px-4 py-3 transition-colors ${
                   index === selectedIndex
-                    ? 'bg-[var(--color-primary)]/10'
-                    : 'hover:bg-[var(--color-code-bg)]'
+                    ? 'bg-blue-50 dark:bg-blue-900/20'
+                    : 'hover:bg-gray-50 dark:hover:bg-gray-700/50'
                 }`}
               >
                 <div className="flex items-start justify-between">
                   <div className="flex-1 min-w-0">
-                    <h4 className="text-sm font-medium text-[var(--color-text)] truncate">
+                    <h4 className="text-sm font-medium text-gray-800 dark:text-gray-200 truncate">
                       {highlightText(result.title, query)}
                     </h4>
-                    <p className="mt-1 text-xs text-[var(--color-text-secondary)] line-clamp-2">
+                    <p className="mt-1 text-xs text-gray-500 dark:text-gray-400 line-clamp-2">
                       {highlightText(result.description, query)}
                     </p>
                     <div className="flex items-center gap-2 mt-2">
                       {result.category && (
-                        <span className="px-2 py-0.5 text-xs bg-[var(--color-primary)]/10 text-[var(--color-primary)] rounded-full">
+                        <span className="px-2 py-0.5 text-xs bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-full">
                           {result.category}
                         </span>
                       )}
                       {result.tags?.slice(0, 2).map((tag) => (
                         <span
                           key={tag}
-                          className="px-2 py-0.5 text-xs bg-[var(--color-code-bg)] text-[var(--color-text-secondary)] rounded-full"
+                          className="px-2 py-0.5 text-xs bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 rounded-full"
                         >
                           {tag}
                         </span>
@@ -256,19 +256,19 @@ export default function Search() {
               </a>
             ))
           ) : query.trim() ? (
-            <div className="px-4 py-8 text-center text-[var(--color-text-secondary)]">
+            <div className="px-4 py-8 text-center text-gray-500 dark:text-gray-400">
               <p>未找到相关文章</p>
               <p className="mt-1 text-xs">尝试其他关键词</p>
             </div>
           ) : (
-            <div className="px-4 py-8 text-center text-[var(--color-text-secondary)]">
+            <div className="px-4 py-8 text-center text-gray-500 dark:text-gray-400">
               <p>输入关键词开始搜索</p>
               <div className="flex items-center justify-center gap-2 mt-3">
-                <kbd className="px-2 py-1 text-xs bg-[var(--color-code-bg)] rounded">
+                <kbd className="px-2 py-1 text-xs bg-gray-100 dark:bg-gray-700 rounded">
                   Ctrl
                 </kbd>
                 <span>+</span>
-                <kbd className="px-2 py-1 text-xs bg-[var(--color-code-bg)] rounded">
+                <kbd className="px-2 py-1 text-xs bg-gray-100 dark:bg-gray-700 rounded">
                   K
                 </kbd>
                 <span className="text-xs">打开搜索</span>
@@ -279,23 +279,23 @@ export default function Search() {
 
         {/* 底部提示 */}
         {results.length > 0 && (
-          <div className="px-4 py-2 border-t border-[var(--color-border)] bg-[var(--color-code-bg)]/50">
-            <div className="flex items-center justify-between text-xs text-[var(--color-text-secondary)]">
+          <div className="px-4 py-2 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50">
+            <div className="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400">
               <div className="flex items-center gap-4">
                 <span>
-                  <kbd className="px-1 py-0.5 bg-[var(--color-code-bg)] rounded">
+                  <kbd className="px-1 py-0.5 bg-gray-100 dark:bg-gray-700 rounded">
                     ↑↓
                   </kbd>{' '}
                   导航
                 </span>
                 <span>
-                  <kbd className="px-1 py-0.5 bg-[var(--color-code-bg)] rounded">
+                  <kbd className="px-1 py-0.5 bg-gray-100 dark:bg-gray-700 rounded">
                     ↵
                   </kbd>{' '}
                   打开
                 </span>
                 <span>
-                  <kbd className="px-1 py-0.5 bg-[var(--color-code-bg)] rounded">
+                  <kbd className="px-1 py-0.5 bg-gray-100 dark:bg-gray-700 rounded">
                     Esc
                   </kbd>{' '}
                   关闭
