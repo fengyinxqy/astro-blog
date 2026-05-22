@@ -1,0 +1,288 @@
+---
+title: "使用 Astro 搭建个人博客完全指南"
+description: "手把手教你使用 Astro 框架搭建一个高性能的个人博客网站。"
+pubDate: 2026-02-20
+tags: ["Astro", "教程", "前端"]
+category: "技术"
+---
+
+## 前言
+
+Astro 是一个现代化的静态站点生成器，专为内容驱动的网站设计。它具有出色的性能表现和灵活的架构，非常适合搭建个人博客。
+
+本文将带你从零开始，使用 Astro 搭建一个功能完善的个人博客。
+
+## 什么是 Astro？
+
+Astro 是一个全栈 Web 框架，专注于构建内容丰富的网站。它的核心特点包括：
+
+| 特性 | 说明 |
+|------|------|
+| 零 JavaScript | 默认不发送任何 JavaScript 到客户端 |
+| 岛屿架构 | 按需加载交互式组件 |
+| 内容集合 | 类型安全的 Markdown/MDX 内容管理 |
+| 多框架支持 | 可使用 React、Vue、Svelte 等 |
+
+## 环境准备
+
+在开始之前，请确保你的开发环境满足以下要求：
+
+1. **Node.js**：版本 18.17.1 或更高
+2. **包管理器**：npm、pnpm 或 yarn
+3. **代码编辑器**：推荐 VS Code + Astro 扩展
+
+```bash
+# 检查 Node.js 版本
+node --version
+
+# 检查 npm 版本
+npm --version
+```
+
+## 创建项目
+
+### 1. 初始化 Astro 项目
+
+```bash
+# 使用 npm
+npm create astro@latest my-blog
+
+# 使用 pnpm
+pnpm create astro@latest my-blog
+
+# 使用 yarn
+yarn create astro my-blog
+```
+
+在创建过程中，你会看到以下选项：
+
+```
+? Where would you like to create your new project? › ./my-blog
+? How would you like to start your new project? › Include: blog
+? Do you want to install dependencies? › Yes
+? Do you want to initialize a git repository? › Yes
+```
+
+### 2. 添加 Tailwind CSS
+
+```bash
+cd my-blog
+npx astro add tailwind
+```
+
+这会自动：
+- 安装 `@astrojs/tailwind` 和 `tailwindcss`
+- 在 `astro.config.mjs` 中添加集成
+- 创建 `tailwind.config.mjs` 配置文件
+
+### 3. 项目结构
+
+搭建完成后，项目结构如下：
+
+```
+my-blog/
+├── src/
+│   ├── components/     # 组件目录
+│   ├── content/
+│   │   └── blog/       # 博客文章目录
+│   ├── layouts/        # 布局文件
+│   └── pages/          # 页面文件
+├── public/             # 静态资源
+├── astro.config.mjs    # Astro 配置
+├── tailwind.config.mjs # Tailwind 配置
+└── package.json
+```
+
+## 配置内容集合
+
+### 1. 定义集合 Schema
+
+创建 `src/content/config.ts` 文件：
+
+```typescript
+import { defineCollection, z } from 'astro:content';
+
+const blog = defineCollection({
+  type: 'content',
+  schema: z.object({
+    title: z.string(),
+    description: z.string(),
+    pubDate: z.coerce.date(),
+    tags: z.array(z.string()).default([]),
+    category: z.string().optional(),
+    cover: z.string().optional(),
+  }),
+});
+
+export const collections = { blog };
+```
+
+### 2. 创建文章
+
+在 `src/content/blog/` 目录下创建 Markdown 文件：
+
+```markdown
+---
+title: "我的第一篇文章"
+description: "这是一篇示例文章"
+pubDate: 2026-01-15
+tags: ["入门", "教程"]
+category: "技术"
+---
+
+文章内容...
+```
+
+## 创建页面
+
+### 1. 文章列表页
+
+创建 `src/pages/blog/index.astro`：
+
+```astro
+---
+import { getCollection } from 'astro:content';
+import Layout from '../../layouts/Layout.astro';
+
+const posts = await getCollection('blog');
+const sortedPosts = posts.sort(
+  (a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf()
+);
+---
+
+<Layout title="文章列表">
+  <main>
+    {sortedPosts.map((post) => (
+      <article>
+        <h2>{post.data.title}</h2>
+        <p>{post.data.description}</p>
+      </article>
+    ))}
+  </main>
+</Layout>
+```
+
+### 2. 文章详情页
+
+创建 `src/pages/blog/[slug].astro`：
+
+```astro
+---
+import { getCollection } from 'astro:content';
+import Layout from '../../layouts/Layout.astro';
+
+export async function getStaticPaths() {
+  const posts = await getCollection('blog');
+  return posts.map((post) => ({
+    params: { slug: post.slug },
+    props: { post },
+  }));
+}
+
+const { post } = Astro.props;
+const { Content } = await post.render();
+---
+
+<Layout title={post.data.title}>
+  <article>
+    <h1>{post.data.title}</h1>
+    <Content />
+  </article>
+</Layout>
+```
+
+## 部署博客
+
+### 1. 构建项目
+
+```bash
+npm run build
+```
+
+构建产物会生成在 `dist/` 目录下。
+
+### 2. 部署到 Vercel
+
+```bash
+# 安装 Vercel CLI
+npm i -g vercel
+
+# 部署
+vercel
+```
+
+### 3. 部署到 Netlify
+
+1. 将代码推送到 GitHub
+2. 在 Netlify 中导入项目
+3. 设置构建命令：`npm run build`
+4. 设置输出目录：`dist`
+
+## 进阶功能
+
+### 添加 RSS 订阅
+
+```bash
+npx astro add rss
+```
+
+在 `astro.config.mjs` 中配置：
+
+```javascript
+import rss from '@astrojs/rss';
+
+export const GET = () =>
+  rss({
+    title: '我的博客',
+    description: '个人技术博客',
+    site: 'https://my-blog.com',
+    items: allPosts.map((post) => ({
+      title: post.data.title,
+      pubDate: post.data.pubDate,
+      description: post.data.description,
+      link: `/blog/${post.slug}/`,
+    })),
+  });
+```
+
+### 添加暗色模式
+
+使用 Tailwind CSS 的 dark 模式：
+
+```html
+<html class="dark">
+  <body class="bg-white dark:bg-gray-900">
+    <!-- 内容 -->
+  </body>
+</html>
+```
+
+### 添加搜索功能
+
+可以使用 Pagefind 实现全文搜索：
+
+```bash
+npm install pagefind
+```
+
+## 总结
+
+通过本指南，你已经学会了：
+
+1. 创建 Astro 项目并配置 Tailwind CSS
+2. 使用内容集合管理博客文章
+3. 创建文章列表和详情页面
+4. 部署到 Vercel 或 Netlify
+5. 添加 RSS、暗色模式等进阶功能
+
+Astro 是一个非常优秀的框架，它的性能和开发体验都让人印象深刻。希望这篇指南能帮助你搭建出满意的个人博客！
+
+## 参考资料
+
+- [Astro 官方文档](https://docs.astro.build)
+- [Astro 博客模板](https://github.com/withastro/astro/tree/main/examples/blog)
+- [Tailwind CSS 文档](https://tailwindcss.com/docs)
+
+---
+
+*如果你在搭建过程中遇到问题，欢迎在评论区留言交流！*

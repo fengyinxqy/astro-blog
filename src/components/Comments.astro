@@ -1,0 +1,99 @@
+---
+// Comments.astro - Giscus 评论区组件
+interface Props {
+  repo?: string;
+  repoId?: string;
+  category?: string;
+  categoryId?: string;
+}
+
+const {
+  repo = 'your-username/your-repo',
+  repoId = 'your-repo-id',
+  category = 'Announcements',
+  categoryId = 'your-category-id',
+} = Astro.props;
+---
+
+<section class="mt-12 pt-8 border-t border-[var(--color-border)]">
+  <h3 class="text-xl font-bold text-[var(--color-text)] mb-6 font-lxgw">
+    评论
+  </h3>
+
+  <div id="giscus-container" class="giscus"></div>
+</section>
+
+<script define:vars={{ repo, repoId, category, categoryId }}>
+  // 获取当前主题
+  function getTheme() {
+    const stored = localStorage.getItem('theme');
+    if (stored === 'dark') return 'dark';
+    if (stored === 'light') return 'light';
+    return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+  }
+
+  // 加载 Giscus
+  function loadGiscus() {
+    const container = document.getElementById('giscus-container');
+    if (!container) return;
+
+    // 清空容器
+    container.innerHTML = '';
+
+    const theme = getTheme();
+
+    const script = document.createElement('script');
+    script.src = 'https://giscus.app/client.js';
+    script.setAttribute('data-repo', repo);
+    script.setAttribute('data-repo-id', repoId);
+    script.setAttribute('data-category', category);
+    script.setAttribute('data-category-id', categoryId);
+    script.setAttribute('data-mapping', 'pathname');
+    script.setAttribute('data-strict', '0');
+    script.setAttribute('data-reactions-enabled', '1');
+    script.setAttribute('data-emit-metadata', '0');
+    script.setAttribute('data-input-position', 'top');
+    script.setAttribute('data-theme', theme);
+    script.setAttribute('data-lang', 'zh-CN');
+    script.setAttribute('crossorigin', 'anonymous');
+    script.async = true;
+
+    container.appendChild(script);
+  }
+
+  // 初始加载
+  loadGiscus();
+
+  // 监听主题变化
+  const observer = new MutationObserver((mutations) => {
+    mutations.forEach((mutation) => {
+      if (mutation.attributeName === 'class') {
+        const iframe = document.querySelector('iframe.giscus-frame');
+        if (iframe) {
+          const theme = getTheme();
+          iframe.contentWindow?.postMessage(
+            { giscus: { setConfig: { theme } } },
+            'https://giscus.app'
+          );
+        }
+      }
+    });
+  });
+
+  observer.observe(document.documentElement, {
+    attributes: true,
+    attributeFilter: ['class'],
+  });
+
+  // 监听自定义主题切换事件
+  window.addEventListener('theme-change', () => {
+    const iframe = document.querySelector('iframe.giscus-frame');
+    if (iframe) {
+      const theme = getTheme();
+      iframe.contentWindow?.postMessage(
+        { giscus: { setConfig: { theme } } },
+        'https://giscus.app'
+      );
+    }
+  });
+</script>

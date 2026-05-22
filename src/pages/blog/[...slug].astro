@@ -1,0 +1,82 @@
+---
+import { getCollection, render } from 'astro:content';
+import PostLayout from '../../layouts/PostLayout.astro';
+import TableOfContents from '../../components/TableOfContents.astro';
+import Comments from '../../components/Comments.astro';
+import ReadingProgress from '../../components/ReadingProgress.astro';
+
+export async function getStaticPaths() {
+  const posts = await getCollection('blog', ({ data }) => {
+    return !data.draft;
+  });
+
+  // Sort posts by date for prev/next navigation
+  const sortedPosts = posts.sort(
+    (a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf()
+  );
+
+  return sortedPosts.map((post, index) => ({
+    params: { slug: post.slug },
+    props: {
+      post,
+      prevPost: index < sortedPosts.length - 1
+        ? { slug: sortedPosts[index + 1].slug, title: sortedPosts[index + 1].data.title }
+        : null,
+      nextPost: index > 0
+        ? { slug: sortedPosts[index - 1].slug, title: sortedPosts[index - 1].data.title }
+        : null,
+    },
+  }));
+}
+
+const { post, prevPost, nextPost } = Astro.props;
+const { Content, headings } = await render(post);
+
+// Calculate reading time (Chinese-optimized: use character count)
+const content = post.body || '';
+const charCount = content.replace(/\s/g, '').length;
+const readingTime = `${Math.max(1, Math.ceil(charCount / 400))} 分钟`;
+
+// Extract headings for TOC
+const toc = headings.filter((h) => h.depth >= 2 && h.depth <= 3);
+---
+
+<ReadingProgress />
+
+<PostLayout
+  title={post.data.title}
+  description={post.data.description}
+  pubDate={post.data.pubDate}
+  updatedDate={post.data.updatedDate}
+  tags={post.data.tags}
+  category={post.data.category}
+  cover={post.data.cover}
+  readingTime={readingTime}
+  prevPost={prevPost}
+  nextPost={nextPost}
+>
+  <!-- Table of Contents (named slot) -->
+  <TableOfContents slot="toc" headings={toc} />
+
+  <!-- Article Content -->
+  <Content />
+
+  <!-- Comments -->
+  <Comments />
+</PostLayout>
+
+<script is:inline>
+  // Smooth scroll for TOC links
+  document.querySelectorAll('a[href^="#"]').forEach((anchor) => {
+    anchor.addEventListener('click', function (e) {
+      e.preventDefault();
+      const target = document.querySelector(this.getAttribute('href'));
+      if (target) {
+        target.scrollIntoView({
+          behavior: 'smooth',
+          block: 'start',
+        });
+      }
+    });
+  });
+</script>

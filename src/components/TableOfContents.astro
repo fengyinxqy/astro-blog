@@ -1,0 +1,102 @@
+---
+// TableOfContents.astro - 文章目录组件
+interface Props {
+  headings: {
+    depth: number;
+    slug: string;
+    text: string;
+  }[];
+}
+
+const { headings } = Astro.props;
+
+// 过滤 H2-H4 级别的标题
+const filteredHeadings = headings.filter((h) => h.depth >= 2 && h.depth <= 4);
+---
+
+{filteredHeadings.length > 0 && (
+  <aside class="hidden lg:block sticky top-24 w-64 shrink-0">
+    <nav class="p-4 bg-[var(--color-card-bg)] rounded-xl border border-[var(--color-border)]">
+      <h4 class="text-sm font-bold text-[var(--color-text)] mb-4 font-lxgw">
+        目录
+      </h4>
+      <ul class="space-y-2 max-h-[calc(100vh-200px)] overflow-y-auto">
+        {filteredHeadings.map((heading) => (
+          <li>
+            <a
+              href={`#${heading.slug}`}
+              class={`toc-link block text-sm text-[var(--color-text-secondary)] hover:text-[var(--color-primary)] transition-colors ${
+                heading.depth === 3 ? 'pl-4' : heading.depth === 4 ? 'pl-8' : 'pl-0'
+              }`}
+              data-heading-id={heading.slug}
+            >
+              {heading.text}
+            </a>
+          </li>
+        ))}
+      </ul>
+    </nav>
+  </aside>
+)}
+
+<script>
+  // 平滑滚动
+  document.querySelectorAll('.toc-link').forEach((link) => {
+    link.addEventListener('click', (e) => {
+      e.preventDefault();
+      const targetId = link.getAttribute('href')?.slice(1);
+      const targetElement = document.getElementById(targetId || '');
+      if (targetElement) {
+        targetElement.scrollIntoView({
+          behavior: 'smooth',
+          block: 'start',
+        });
+      }
+    });
+  });
+
+  // 当前阅读位置高亮
+  const observerOptions = {
+    rootMargin: '-80px 0px -80% 0px',
+    threshold: 0,
+  };
+
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach((entry) => {
+      const id = entry.target.getAttribute('id');
+      const tocLink = document.querySelector(`.toc-link[data-heading-id="${id}"]`);
+
+      if (tocLink) {
+        if (entry.isIntersecting) {
+          // 移除所有活动状态
+          document.querySelectorAll('.toc-link').forEach((link) => {
+            link.classList.remove('toc-active');
+          });
+          // 添加当前活动状态
+          tocLink.classList.add('toc-active');
+        }
+      }
+    });
+  }, observerOptions);
+
+  // 观察所有标题元素
+  document.querySelectorAll('h2, h3, h4').forEach((heading) => {
+    if (heading.id) {
+      observer.observe(heading);
+    }
+  });
+</script>
+
+<style>
+  .toc-link {
+    border-left: 2px solid transparent;
+    padding-left: 0.75rem;
+    margin-left: -1px;
+  }
+
+  .toc-link.toc-active {
+    color: var(--color-primary);
+    font-weight: 500;
+    border-left-color: var(--color-primary);
+  }
+</style>

@@ -1,0 +1,121 @@
+---
+// Header.astro - 导航栏组件
+import ThemeToggle from './ThemeToggle';
+---
+
+<header class="fixed top-0 left-0 right-0 z-50 h-16 bg-[var(--color-bg)]/80 backdrop-blur-xl border-b border-[var(--color-border)]/50 transition-colors duration-300">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-full flex items-center justify-between">
+    <!-- Logo/博客名称 - 左侧 -->
+    <a href="/" class="flex items-center space-x-2 group">
+      <div class="w-8 h-8 bg-[var(--color-primary)] rounded-lg flex items-center justify-center transition-transform duration-300 group-hover:rotate-12">
+        <span class="text-white font-bold text-sm">B</span>
+      </div>
+      <span class="text-xl font-bold text-[var(--color-text)] font-lxgw">
+        我的博客
+      </span>
+    </a>
+
+    <!-- 导航链接 - 居中（桌面端） -->
+    <nav class="hidden md:flex items-center space-x-8">
+      <a href="/" class="nav-link text-sm font-medium text-[var(--color-text)] hover:text-[var(--color-primary)] transition-colors">
+        首页
+      </a>
+      <a href="/blog" class="nav-link text-sm font-medium text-[var(--color-text)] hover:text-[var(--color-primary)] transition-colors">
+        文章
+      </a>
+      <a href="/about" class="nav-link text-sm font-medium text-[var(--color-text)] hover:text-[var(--color-primary)] transition-colors">
+        关于
+      </a>
+      <a href="/rss.xml" class="nav-link text-sm font-medium text-[var(--color-text)] hover:text-[var(--color-primary)] transition-colors" target="_blank">
+        RSS
+      </a>
+    </nav>
+
+    <!-- 右侧按钮组 -->
+    <div class="flex items-center space-x-3">
+      <!-- 搜索按钮 -->
+      <button
+        id="search-toggle"
+        class="p-2 rounded-lg text-[var(--color-text)] hover:bg-[var(--color-code-bg)] transition-colors"
+        aria-label="搜索"
+      >
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+        </svg>
+      </button>
+
+      <!-- 暗色模式切换 -->
+      <ThemeToggle client:load />
+
+      <!-- 移动端汉堡菜单 -->
+      <button
+        id="mobile-menu-toggle"
+        class="md:hidden p-2 rounded-lg text-[var(--color-text)] hover:bg-[var(--color-code-bg)] transition-colors"
+        aria-label="菜单"
+      >
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+        </svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- 移动端菜单 -->
+  <div id="mobile-menu" class="md:hidden hidden absolute top-16 left-0 right-0 bg-[var(--color-bg)] border-b border-[var(--color-border)] shadow-lg">
+    <nav class="px-4 py-4 space-y-3">
+      <a href="/" class="block py-2 text-[var(--color-text)] hover:text-[var(--color-primary)] transition-colors">
+        首页
+      </a>
+      <a href="/blog" class="block py-2 text-[var(--color-text)] hover:text-[var(--color-primary)] transition-colors">
+        文章
+      </a>
+      <a href="/about" class="block py-2 text-[var(--color-text)] hover:text-[var(--color-primary)] transition-colors">
+        关于
+      </a>
+      <a href="/rss.xml" class="block py-2 text-[var(--color-text)] hover:text-[var(--color-primary)] transition-colors" target="_blank">
+        RSS
+      </a>
+    </nav>
+  </div>
+</header>
+
+<script>
+  // 移动端菜单切换
+  const mobileMenuToggle = document.getElementById('mobile-menu-toggle');
+  const mobileMenu = document.getElementById('mobile-menu');
+
+  if (mobileMenuToggle && mobileMenu) {
+    mobileMenuToggle.addEventListener('click', () => {
+      mobileMenu.classList.toggle('hidden');
+    });
+  }
+
+  // 搜索按钮点击事件 - 触发搜索模态框
+  const searchToggle = document.getElementById('search-toggle');
+  if (searchToggle) {
+    searchToggle.addEventListener('click', () => {
+      window.dispatchEvent(new CustomEvent('toggle-search'));
+    });
+  }
+</script>
+
+<style>
+  .nav-link {
+    position: relative;
+  }
+
+  .nav-link::after {
+    content: '';
+    position: absolute;
+    bottom: -4px;
+    left: 0;
+    width: 0;
+    height: 2px;
+    background-color: var(--color-primary);
+    transition: width 0.3s ease;
+  }
+
+  .nav-link:hover::after {
+    width: 100%;
+  }
+</style>
