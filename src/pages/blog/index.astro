@@ -15,20 +15,6 @@ const sortedPosts = allPosts.sort(
 
 // Get unique categories
 const categories = [...new Set(allPosts.map((post) => post.data.category).filter(Boolean))];
-
-// Category filter
-const category = Astro.url.searchParams.get('category');
-const filteredPosts = category
-  ? sortedPosts.filter(post => post.data.category === category)
-  : sortedPosts;
-
-// Pagination
-const postsPerPage = 10;
-const page = Astro.url.searchParams.get('page');
-const currentPage = page ? parseInt(page) : 1;
-const totalPages = Math.ceil(filteredPosts.length / postsPerPage);
-const startIndex = (currentPage - 1) * postsPerPage;
-const paginatedPosts = filteredPosts.slice(startIndex, startIndex + postsPerPage);
 ---
 
 <BaseLayout title="文章列表">
@@ -38,35 +24,26 @@ const paginatedPosts = filteredPosts.slice(startIndex, startIndex + postsPerPage
       <h1 class="text-3xl md:text-4xl font-bold text-[var(--color-text)] mb-4">
         文章列表
       </h1>
-      <p class="text-[var(--color-text-secondary)]">
-        共 {filteredPosts.length} 篇文章
-        {category && <span>（分类：{category}）</span>}
+      <p class="text-[var(--color-text-secondary)]" id="post-count">
+        共 {sortedPosts.length} 篇文章
       </p>
     </div>
 
     <!-- Category Filters -->
     {categories.length > 0 && (
-      <div class="flex flex-wrap gap-2 mb-8">
+      <div class="flex flex-wrap gap-2 mb-8" id="category-filters">
         <a
           href="/blog"
-          style={!category ? 'color: white !important;' : ''}
-          class={`px-4 py-2 text-sm font-medium rounded-full transition-colors ${
-            !category
-              ? 'bg-[var(--color-primary)]'
-              : 'bg-[var(--color-code-bg)] text-[var(--color-text)] hover:bg-[var(--color-primary)]/10 hover:text-[var(--color-primary)]'
-          }`}
+          data-category=""
+          class="category-btn px-4 py-2 text-sm font-medium rounded-full transition-colors bg-[var(--color-code-bg)] text-[var(--color-text)] hover:bg-[var(--color-primary)]/10 hover:text-[var(--color-primary)]"
         >
           全部
         </a>
         {categories.map((cat) => (
           <a
             href={`/blog?category=${cat}`}
-            style={category === cat ? 'color: white !important;' : ''}
-            class={`px-4 py-2 text-sm font-medium rounded-full transition-colors ${
-              category === cat
-                ? 'bg-[var(--color-primary)]'
-                : 'bg-[var(--color-code-bg)] text-[var(--color-text)] hover:bg-[var(--color-primary)]/10 hover:text-[var(--color-primary)]'
-            }`}
+            data-category={cat}
+            class="category-btn px-4 py-2 text-sm font-medium rounded-full transition-colors bg-[var(--color-code-bg)] text-[var(--color-text)] hover:bg-[var(--color-primary)]/10 hover:text-[var(--color-primary)]"
           >
             {cat}
           </a>
@@ -75,71 +52,69 @@ const paginatedPosts = filteredPosts.slice(startIndex, startIndex + postsPerPage
     )}
 
     <!-- Posts List -->
-    <div class="space-y-6">
-      {paginatedPosts.map((post) => (
-        <PostCard post={post} />
+    <div class="space-y-6" id="posts-list">
+      {sortedPosts.map((post) => (
+        <div data-post-category={post.data.category || ''}>
+          <PostCard post={post} />
+        </div>
       ))}
     </div>
 
-    <!-- Pagination -->
-    {totalPages > 1 && (
-      <nav class="flex items-center justify-center gap-2 mt-12" aria-label="分页导航">
-        <a
-          href={currentPage > 1 ? `/blog?page=${currentPage - 1}${category ? `&category=${category}` : ''}` : '#'}
-          class={`p-2 rounded-lg border border-[var(--color-border)] ${
-            currentPage === 1
-              ? 'opacity-50 cursor-not-allowed'
-              : 'hover:border-[var(--color-primary)] hover:bg-[var(--color-primary)]/10'
-          } transition-all`}
-          aria-disabled={currentPage === 1}
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
-          </svg>
-        </a>
-
-        {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
-          <a
-            href={`/blog?page=${p}${category ? `&category=${category}` : ''}`}
-            class={`px-4 py-2 rounded-lg border ${
-              p === currentPage
-                ? 'bg-[var(--color-primary)] text-white border-[var(--color-primary)]'
-                : 'border-[var(--color-border)] hover:border-[var(--color-primary)] hover:bg-[var(--color-primary)]/10'
-            } transition-all`}
-          >
-            {p}
-          </a>
-        ))}
-
-        <a
-          href={currentPage < totalPages ? `/blog?page=${currentPage + 1}${category ? `&category=${category}` : ''}` : '#'}
-          class={`p-2 rounded-lg border border-[var(--color-border)] ${
-            currentPage === totalPages
-              ? 'opacity-50 cursor-not-allowed'
-              : 'hover:border-[var(--color-primary)] hover:bg-[var(--color-primary)]/10'
-          } transition-all`}
-          aria-disabled={currentPage === totalPages}
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-          </svg>
-        </a>
-      </nav>
-    )}
-
     <!-- Empty State -->
-    {paginatedPosts.length === 0 && (
-      <div class="text-center py-16">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 mx-auto text-[var(--color-text-secondary)] mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-        </svg>
-        <h2 class="text-xl font-semibold text-[var(--color-text)] mb-2">
-          暂无文章
-        </h2>
-        <p class="text-[var(--color-text-secondary)]">
-          {category ? `没有找到"${category}"分类的文章` : '开始写第一篇文章吧！'}
-        </p>
-      </div>
-    )}
+    <div id="empty-state" class="text-center py-16 hidden">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 mx-auto text-[var(--color-text-secondary)] mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+      </svg>
+      <h2 class="text-xl font-semibold text-[var(--color-text)] mb-2">
+        暂无文章
+      </h2>
+      <p id="empty-text" class="text-[var(--color-text-secondary)]">
+        开始写第一篇文章吧！
+      </p>
+    </div>
   </div>
 </BaseLayout>
+
+<script>
+  const params = new URLSearchParams(window.location.search);
+  const currentCategory = params.get('category') || '';
+
+  // Highlight active category button
+  document.querySelectorAll('.category-btn').forEach((btn) => {
+    const cat = btn.getAttribute('data-category');
+    if (cat === currentCategory) {
+      btn.classList.remove('bg-[var(--color-code-bg)]', 'text-[var(--color-text)]');
+      btn.classList.add('bg-[var(--color-primary)]');
+      (btn as HTMLElement).style.color = 'white';
+    }
+  });
+
+  // Filter posts by category
+  if (currentCategory) {
+    const posts = document.querySelectorAll('#posts-list > div[data-post-category]');
+    let visibleCount = 0;
+
+    posts.forEach((post) => {
+      if (post.getAttribute('data-post-category') === currentCategory) {
+        (post as HTMLElement).style.display = '';
+        visibleCount++;
+      } else {
+        (post as HTMLElement).style.display = 'none';
+      }
+    });
+
+    // Update post count
+    const countEl = document.getElementById('post-count');
+    if (countEl) {
+      countEl.textContent = `共 ${visibleCount} 篇文章（分类：${currentCategory}）`;
+    }
+
+    // Show empty state if no posts
+    if (visibleCount === 0) {
+      const emptyState = document.getElementById('empty-state');
+      const emptyText = document.getElementById('empty-text');
+      if (emptyState) emptyState.classList.remove('hidden');
+      if (emptyText) emptyText.textContent = `没有找到"${currentCategory}"分类的文章`;
+    }
+  }
+</script>
