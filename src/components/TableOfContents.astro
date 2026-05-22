@@ -15,7 +15,7 @@ const filteredHeadings = headings.filter((h) => h.depth >= 2 && h.depth <= 4);
 ---
 
 {filteredHeadings.length > 0 && (
-  <aside class="hidden lg:block sticky top-24 w-64 shrink-0">
+  <aside class="hidden lg:block sticky top-24 w-64 shrink-0 self-start">
     <nav class="p-4 bg-[var(--color-card-bg)] rounded-xl border border-[var(--color-border)]">
       <h4 class="text-sm font-bold text-[var(--color-text)] mb-4 font-lxgw">
         目录
@@ -74,6 +74,8 @@ const filteredHeadings = headings.filter((h) => h.depth >= 2 && h.depth <= 4);
           });
           // 添加当前活动状态
           tocLink.classList.add('toc-active');
+          // 目录自动滚动到当前项
+          tocLink.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
         }
       }
     });
