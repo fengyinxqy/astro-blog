@@ -223,5 +223,64 @@ const ogImageURL = new URL(ogImage, Astro.site);
     <Footer />
     <SpeedInsights />
     <Analytics />
+
+    <!-- Live2D 小人 -->
+    <script is:inline>
+      (async function () {
+        var live2d_path = 'https://fastly.jsdelivr.net/npm/live2d-widgets@1.0.1/dist/';
+
+        function loadResource(url, type) {
+          return new Promise(function (resolve, reject) {
+            var tag;
+            if (type === 'css') {
+              tag = document.createElement('link');
+              tag.rel = 'stylesheet';
+              tag.href = url;
+            } else if (type === 'js') {
+              tag = document.createElement('script');
+              tag.type = 'module';
+              tag.src = url;
+            }
+            if (tag) {
+              tag.onload = function () { resolve(url); };
+              tag.onerror = function () { reject(url); };
+              document.head.appendChild(tag);
+            }
+          });
+        }
+
+        // 避免图片资源跨域问题
+        var OriginalImage = window.Image;
+        window.Image = function () {
+          var img = new OriginalImage();
+          img.crossOrigin = 'anonymous';
+          return img;
+        };
+        window.Image.prototype = OriginalImage.prototype;
+
+        await Promise.all([
+          loadResource(live2d_path + 'waifu.css', 'css'),
+          loadResource(live2d_path + 'waifu-tips.js', 'js')
+        ]);
+
+        // 等待 initWidget 可用
+        var maxWait = 50;
+        while (typeof initWidget === 'undefined' && maxWait-- > 0) {
+          await new Promise(function (r) { setTimeout(r, 100); });
+        }
+
+        if (typeof initWidget !== 'undefined') {
+          initWidget({
+            waifuPath: live2d_path + 'waifu-tips.json',
+            cdnPath: 'https://fastly.jsdelivr.net/gh/fghrsh/live2d_api/',
+            cubism2Path: live2d_path + 'live2d.min.js',
+            cubism5Path: 'https://cubism.live2d.com/sdk-web/cubismcore/live2dcubismcore.min.js',
+            tools: ['hitokoto', 'asteroids', 'switch-model', 'switch-texture', 'photo', 'info', 'quit'],
+            logLevel: 'warn',
+            drag: true,
+          });
+        }
+      })();
+    </script>
   </body>
 </html>
