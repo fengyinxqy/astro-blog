@@ -3,6 +3,7 @@ import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
 import ThemeToggle from '../components/ThemeToggle';
 import Search from '../components/Search';
+import SpeedInsights from "@vercel/speed-insights/astro"
 interface Props {
   title: string;
   description?: string;
@@ -219,5 +220,6 @@ const ogImageURL = new URL(ogImage, Astro.site);
     </main>
 
     <Footer />
+    <SpeedInsights />
   </body>
 </html>
