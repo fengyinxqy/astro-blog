@@ -1,5 +1,5 @@
 ---
-// PostCard.astro - 文章卡片组件
+// PostCard.astro - 文章卡片组件（精装修版）
 interface Props {
   post: {
     slug: string;
@@ -24,57 +24,81 @@ const formattedDate = pubDate.toLocaleDateString('zh-CN', {
 });
 ---
 
-<article class="group bg-[var(--color-card-bg)] rounded-xl overflow-hidden border border-[var(--color-border)] transition-all duration-300 hover:-translate-y-1 hover:shadow-lg">
+<article
+  class="group relative bg-[var(--color-card-bg)] rounded-2xl overflow-hidden border border-[var(--color-border-light)] transition-all duration-300"
+  style="box-shadow: var(--shadow-card);"
+  onmouseenter="this.style.boxShadow='var(--shadow-card-hover)'; this.style.borderColor='var(--color-border)'; this.style.transform='translateY(-2px)';"
+  onmouseleave="this.style.boxShadow='var(--shadow-card)'; this.style.borderColor='var(--color-border-light)'; this.style.transform='translateY(0)';"
+>
   <!-- 封面图（可选） -->
   {cover && (
-    <div class="relative aspect-video overflow-hidden">
+    <div class="relative aspect-[16/10] overflow-hidden">
       <img
         src={cover}
         alt={title}
-        class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+        class="w-full h-full object-cover transition-transform duration-500 ease-out group-hover:scale-[1.03]"
         loading="lazy"
       />
-      <div class="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
+      <!-- 底部渐变蒙版 -->
+      <div class="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-black/15 to-transparent pointer-events-none" />
     </div>
   )}
 
   <!-- 内容区域 -->
-  <div class="p-5">
-    <!-- 分类 + 标签 -->
-    <div class="flex flex-wrap items-center gap-2 mb-3">
+  <div class="p-6">
+    <!-- 分类标签 -->
+    <div class="flex flex-wrap items-center gap-2 mb-3.5">
       {category && (
         <a
           href={`/blog?category=${category}`}
-          class="inline-block px-3 py-1 text-xs font-medium bg-[var(--color-primary)]/10 text-[var(--color-primary)] rounded-full hover:bg-[var(--color-primary)]/20 transition-colors"
+          class="inline-flex items-center px-2.5 py-1 text-xs font-semibold rounded-full transition-all duration-200"
+          style="background: var(--color-primary-soft); color: var(--color-primary);"
         >
           {category}
         </a>
       )}
-      {tags?.slice(0, 3).map((tag) => (
-        <span class="inline-block px-3 py-1 text-xs font-medium bg-[var(--color-code-bg)] text-[var(--color-text-secondary)] rounded-full">
+      {tags?.slice(0, 2).map((tag) => (
+        <span
+          class="inline-flex items-center px-2.5 py-1 text-xs font-medium rounded-full transition-colors duration-200"
+          style="background: var(--color-code-bg); color: var(--color-text-secondary);"
+        >
           {tag}
         </span>
       ))}
     </div>
 
-    <!-- 标题（2行截断） -->
-    <h3 class="text-lg font-bold text-[var(--color-text)] mb-2 line-clamp-2 group-hover:text-[var(--color-primary)] transition-colors font-lxgw">
-      <a href={`/blog/${post.slug}`}>
+    <!-- 标题 -->
+    <h3 class="text-lg font-bold mb-2.5 leading-snug line-clamp-2 group-hover:text-[var(--color-primary)] transition-colors duration-200"
+      style="letter-spacing: -0.01em; color: var(--color-text);">
+      <a href={`/blog/${post.slug}`} class="no-underline hover:text-inherit" style="color: inherit;">
         {title}
       </a>
     </h3>
 
-    <!-- 摘要（3行截断） -->
-    <p class="text-sm text-[var(--color-text-secondary)] mb-4 line-clamp-3 leading-relaxed">
+    <!-- 摘要 -->
+    <p class="text-sm leading-relaxed mb-4 line-clamp-3"
+      style="color: var(--color-text-secondary);">
       {description}
     </p>
 
-    <!-- 发布日期 -->
-    <time
-      datetime={pubDate.toISOString()}
-      class="text-xs text-[var(--color-text-secondary)]"
-    >
-      {formattedDate}
-    </time>
+    <!-- 底部：日期 -->
+    <div class="flex items-center gap-1.5">
+      <svg class="w-3.5 h-3.5 opacity-50" style="color: var(--color-text-muted);" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+      </svg>
+      <time
+        datetime={pubDate.toISOString()}
+        class="text-xs font-medium"
+        style="color: var(--color-text-muted);">
+        {formattedDate}
+      </time>
+    </div>
   </div>
 </article>
+
+<style>
+  /* 内联 hover 通过 JS 处理以确保平滑 */
+  article {
+    will-change: transform, box-shadow, border-color;
+  }
+</style>

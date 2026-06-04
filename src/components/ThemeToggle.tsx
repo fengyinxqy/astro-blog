@@ -67,7 +67,10 @@ export default function ThemeToggle() {
   // 防止服务端渲染不匹配
   if (!mounted) {
     return (
-      <button className="p-2 rounded-lg text-gray-800 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+      <button
+        className="p-2 rounded-lg transition-colors duration-200"
+        style={{ color: 'var(--color-text-secondary)' }}
+      >
         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <circle cx="12" cy="12" r="4" />
         </svg>
@@ -132,7 +135,8 @@ export default function ThemeToggle() {
   return (
     <button
       onClick={toggleTheme}
-      className="p-2 rounded-lg text-gray-800 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+      className="p-2 rounded-lg transition-colors duration-200"
+      style={{ color: 'var(--color-text-secondary)' }}
       aria-label={`当前主题: ${theme}，点击切换`}
       title={`当前主题: ${theme}`}
     >

@@ -17,7 +17,7 @@ export default function Search() {
   const inputRef = useRef<HTMLInputElement>(null);
   const resultsRef = useRef<HTMLDivElement>(null);
 
-  // 模拟搜索数据（实际项目中应该从 API 或静态数据获取）
+  // 搜索数据
   const allPosts: SearchResult[] = [
     {
       slug: 'hello-world',
@@ -42,7 +42,6 @@ export default function Search() {
     },
   ];
 
-  // 搜索函数
   const performSearch = useCallback((searchQuery: string) => {
     if (!searchQuery.trim()) {
       setResults([]);
@@ -51,7 +50,6 @@ export default function Search() {
 
     setIsLoading(true);
 
-    // 模拟搜索延迟
     setTimeout(() => {
       const filtered = allPosts.filter(
         (post) =>
@@ -69,7 +67,6 @@ export default function Search() {
     }, 200);
   }, []);
 
-  // 监听搜索词变化
   useEffect(() => {
     performSearch(query);
   }, [query, performSearch]);
@@ -77,13 +74,10 @@ export default function Search() {
   // 快捷键监听
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      // Ctrl+K / Cmd+K 打开搜索
       if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
         e.preventDefault();
         setIsOpen(true);
       }
-
-      // Esc 关闭搜索
       if (e.key === 'Escape') {
         setIsOpen(false);
       }
@@ -93,7 +87,7 @@ export default function Search() {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
 
-  // 监听自定义搜索事件
+  // 监听自定义事件
   useEffect(() => {
     const handleToggleSearch = () => {
       setIsOpen((prev) => !prev);
@@ -103,14 +97,12 @@ export default function Search() {
     return () => window.removeEventListener('toggle-search', handleToggleSearch);
   }, []);
 
-  // 打开时聚焦输入框
   useEffect(() => {
     if (isOpen && inputRef.current) {
       inputRef.current.focus();
     }
   }, [isOpen]);
 
-  // 键盘导航
   const handleKeyDown = (e: React.KeyboardEvent) => {
     switch (e.key) {
       case 'ArrowDown':
@@ -133,19 +125,22 @@ export default function Search() {
     }
   };
 
-  // 滚动到选中项
   useEffect(() => {
     if (resultsRef.current) {
       const selectedElement = resultsRef.current.children[selectedIndex] as HTMLElement;
       if (selectedElement) {
-        selectedElement.scrollIntoView({
-          block: 'nearest',
-        });
+        const container = resultsRef.current;
+        const elemTop = selectedElement.offsetTop;
+        const elemBottom = elemTop + selectedElement.offsetHeight;
+        if (elemBottom > container.scrollTop + container.clientHeight) {
+          container.scrollTop = elemBottom - container.clientHeight;
+        } else if (elemTop < container.scrollTop) {
+          container.scrollTop = elemTop;
+        }
       }
     }
   }, [selectedIndex]);
 
-  // 高亮关键词
   const highlightText = (text: string, highlight: string) => {
     if (!highlight.trim()) return text;
 
@@ -156,7 +151,11 @@ export default function Search() {
       regex.test(part) ? (
         <span
           key={index}
-          className="bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 font-medium"
+          style={{
+            background: 'var(--color-primary-soft)',
+            color: 'var(--color-primary)',
+            fontWeight: 600,
+          }}
         >
           {part}
         </span>
@@ -177,11 +176,21 @@ export default function Search() {
       />
 
       {/* 搜索框 */}
-      <div className="relative w-full max-w-2xl mx-4 bg-white dark:bg-gray-800 rounded-xl shadow-2xl border border-gray-200 dark:border-gray-700 overflow-hidden">
+      <div
+        className="relative w-full max-w-2xl mx-4 rounded-2xl shadow-2xl overflow-hidden"
+        style={{
+          background: 'var(--color-card-bg)',
+          border: '1px solid var(--color-border)',
+        }}
+      >
         {/* 搜索输入 */}
-        <div className="flex items-center px-4 border-b border-gray-200 dark:border-gray-700">
+        <div
+          className="flex items-center px-4"
+          style={{ borderBottom: `1px solid var(--color-border-light)` }}
+        >
           <svg
-            className="w-5 h-5 text-gray-400 shrink-0"
+            className="w-5 h-5 shrink-0"
+            style={{ color: 'var(--color-text-muted)' }}
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -200,9 +209,18 @@ export default function Search() {
             onChange={(e) => setQuery(e.target.value)}
             onKeyDown={handleKeyDown}
             placeholder="搜索文章..."
-            className="flex-1 px-3 py-4 text-gray-800 dark:text-gray-200 bg-transparent outline-none placeholder-gray-400"
+            className="flex-1 px-3 py-4 bg-transparent outline-none text-base"
+            style={{
+              color: 'var(--color-text)',
+            }}
           />
-          <kbd className="hidden sm:inline-block px-2 py-1 text-xs text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-700 rounded">
+          <kbd
+            className="hidden sm:inline-block px-2 py-1 text-xs rounded-md font-medium"
+            style={{
+              color: 'var(--color-text-muted)',
+              background: 'var(--color-code-bg)',
+            }}
+          >
             ESC
           </kbd>
         </div>
@@ -213,8 +231,14 @@ export default function Search() {
           className="max-h-[60vh] overflow-y-auto"
         >
           {isLoading ? (
-            <div className="px-4 py-8 text-center text-gray-500 dark:text-gray-400">
-              <div className="inline-block w-6 h-6 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
+            <div
+              className="px-4 py-8 text-center"
+              style={{ color: 'var(--color-text-muted)' }}
+            >
+              <div
+                className="inline-block w-6 h-6 border-2 border-t-transparent rounded-full animate-spin"
+                style={{ borderColor: 'var(--color-primary)', borderTopColor: 'transparent' }}
+              />
               <p className="mt-2">搜索中...</p>
             </div>
           ) : results.length > 0 ? (
@@ -222,30 +246,47 @@ export default function Search() {
               <a
                 key={result.slug}
                 href={`/blog/${result.slug}`}
-                className={`block px-4 py-3 transition-colors ${
-                  index === selectedIndex
-                    ? 'bg-blue-50 dark:bg-blue-900/20'
-                    : 'hover:bg-gray-50 dark:hover:bg-gray-700/50'
-                }`}
+                className="block px-4 py-3 transition-colors duration-150"
+                style={{
+                  background: index === selectedIndex
+                    ? 'var(--color-primary-ghost)'
+                    : 'transparent',
+                }}
               >
                 <div className="flex items-start justify-between">
                   <div className="flex-1 min-w-0">
-                    <h4 className="text-sm font-medium text-gray-800 dark:text-gray-200 truncate">
+                    <h4
+                      className="text-sm font-medium truncate"
+                      style={{ color: 'var(--color-text)' }}
+                    >
                       {highlightText(result.title, query)}
                     </h4>
-                    <p className="mt-1 text-xs text-gray-500 dark:text-gray-400 line-clamp-2">
+                    <p
+                      className="mt-1 text-xs line-clamp-2"
+                      style={{ color: 'var(--color-text-secondary)' }}
+                    >
                       {highlightText(result.description, query)}
                     </p>
                     <div className="flex items-center gap-2 mt-2">
                       {result.category && (
-                        <span className="px-2 py-0.5 text-xs bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-full">
+                        <span
+                          className="px-2 py-0.5 text-xs rounded-full font-medium"
+                          style={{
+                            background: 'var(--color-primary-soft)',
+                            color: 'var(--color-primary)',
+                          }}
+                        >
                           {result.category}
                         </span>
                       )}
                       {result.tags?.slice(0, 2).map((tag) => (
                         <span
                           key={tag}
-                          className="px-2 py-0.5 text-xs bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 rounded-full"
+                          className="px-2 py-0.5 text-xs rounded-full"
+                          style={{
+                            background: 'var(--color-code-bg)',
+                            color: 'var(--color-text-secondary)',
+                          }}
                         >
                           {tag}
                         </span>
@@ -256,19 +297,31 @@ export default function Search() {
               </a>
             ))
           ) : query.trim() ? (
-            <div className="px-4 py-8 text-center text-gray-500 dark:text-gray-400">
+            <div
+              className="px-4 py-8 text-center"
+              style={{ color: 'var(--color-text-muted)' }}
+            >
               <p>未找到相关文章</p>
               <p className="mt-1 text-xs">尝试其他关键词</p>
             </div>
           ) : (
-            <div className="px-4 py-8 text-center text-gray-500 dark:text-gray-400">
+            <div
+              className="px-4 py-8 text-center"
+              style={{ color: 'var(--color-text-muted)' }}
+            >
               <p>输入关键词开始搜索</p>
               <div className="flex items-center justify-center gap-2 mt-3">
-                <kbd className="px-2 py-1 text-xs bg-gray-100 dark:bg-gray-700 rounded">
+                <kbd
+                  className="px-2 py-1 text-xs rounded-md"
+                  style={{ background: 'var(--color-code-bg)' }}
+                >
                   Ctrl
                 </kbd>
                 <span>+</span>
-                <kbd className="px-2 py-1 text-xs bg-gray-100 dark:bg-gray-700 rounded">
+                <kbd
+                  className="px-2 py-1 text-xs rounded-md"
+                  style={{ background: 'var(--color-code-bg)' }}
+                >
                   K
                 </kbd>
                 <span className="text-xs">打开搜索</span>
@@ -279,23 +332,41 @@ export default function Search() {
 
         {/* 底部提示 */}
         {results.length > 0 && (
-          <div className="px-4 py-2 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50">
-            <div className="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400">
+          <div
+            className="px-4 py-2.5"
+            style={{
+              borderTop: `1px solid var(--color-border-light)`,
+              background: 'var(--color-bg-page)',
+            }}
+          >
+            <div
+              className="flex items-center justify-between text-xs"
+              style={{ color: 'var(--color-text-muted)' }}
+            >
               <div className="flex items-center gap-4">
                 <span>
-                  <kbd className="px-1 py-0.5 bg-gray-100 dark:bg-gray-700 rounded">
+                  <kbd
+                    className="px-1.5 py-0.5 rounded text-xs"
+                    style={{ background: 'var(--color-code-bg)' }}
+                  >
                     ↑↓
                   </kbd>{' '}
                   导航
                 </span>
                 <span>
-                  <kbd className="px-1 py-0.5 bg-gray-100 dark:bg-gray-700 rounded">
+                  <kbd
+                    className="px-1.5 py-0.5 rounded text-xs"
+                    style={{ background: 'var(--color-code-bg)' }}
+                  >
                     ↵
                   </kbd>{' '}
                   打开
                 </span>
                 <span>
-                  <kbd className="px-1 py-0.5 bg-gray-100 dark:bg-gray-700 rounded">
+                  <kbd
+                    className="px-1.5 py-0.5 rounded text-xs"
+                    style={{ background: 'var(--color-code-bg)' }}
+                  >
                     Esc
                   </kbd>{' '}
                   关闭
